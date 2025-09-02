@@ -114,7 +114,9 @@ app.get('/api/random-image', (req,res) => {
         return res.status(404).json({error: "No Images Found"});
     }
     const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
-    res.json({ image: randomImage })
+    res.json({ image: randomImage, 
+        local_url: `http://${localIP}:${PORT}/images/${randomImage.replace(/ /g,'%20')}`
+    })
 })
 
 app.use('/images', express.static(config.imageDirectory));
