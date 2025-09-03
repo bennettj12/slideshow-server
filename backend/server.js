@@ -1,7 +1,7 @@
 /**
  * Server.js
  * ---
- * Our API/server for serving random images from the server's filesystem to the frontend.
+ * Server for serving random images from the server's filesystem to the frontend.
  */
 
 // express: server

@@ -9,7 +9,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [intervalTime, setIntervalTime] = useState(3600000 * (0) + 60000 * (0) + 1000 * (10)); // default of 10 seconds
 
-  const [serverUrl, setServerUrl] = useState('http://localhost:3001')
+  const [serverUrl, setServerUrl] = useState('http://192.168.0.117:3001')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -92,6 +92,11 @@ function App() {
       setProgressBar(0)
       elapsedBeforePause.current = 0
       setImageIndex(index)
+      
+      setLoading(true)
+      setInterval(() => {
+        setLoading(false)
+      }, 100)
     }
   }, [imageUrls.length])
 
