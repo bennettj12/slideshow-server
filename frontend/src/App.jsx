@@ -7,7 +7,7 @@ import axios from 'axios'
 function App() {
   //const [currentImage, setCurrentImage] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
-  const [intervalTime, setIntervalTime] = useState(3600000 * (0) + 60000 * (2) + 1000 * (20)); // default of 10 seconds
+  const [intervalTime, setIntervalTime] = useState(3600000 * (0) + 60000 * (0) + 1000 * (10)); // default of 10 seconds
 
   const [serverUrl, setServerUrl] = useState('http://localhost:3001')
   const [loading, setLoading] = useState(true)
@@ -23,11 +23,14 @@ function App() {
   const lastChangeTime = useRef(Date.now());
   const elapsedBeforePause = useRef(0);
 
+  const [progressBar, setProgressBar] = useState(0);
+
   //const imageUrls = [];
   const LIST_MAX = 100;
 
   // Slideshow timer setup
   useEffect(() => {
+
     let countdownInterval = null
     if( isPlaying ) {
       countdownInterval = setInterval(() => {
@@ -35,6 +38,9 @@ function App() {
           const elapsed = Date.now() - lastChangeTime.current;
           const remaining = Math.max(0, intervalTime - elapsed)
           setTimeLeft(remaining)
+          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
+          console.log(prog)
+          setProgressBar(prog)
           if(remaining == 0){
             fetchRandomImage()
           }
@@ -44,7 +50,7 @@ function App() {
     return () => {
       if (countdownInterval) clearInterval(countdownInterval)
     }
-  }, [isPlaying, intervalTime])
+  }, [isPlaying, intervalTime, progressBar])
 
   const fetchRandomImage = useCallback(async () => {
     try {
@@ -54,6 +60,7 @@ function App() {
       lastChangeTime.current = Date.now()
       elapsedBeforePause.current = 0
       setTimeLeft(intervalTime)
+      setProgressBar(0)
 
       const response = await axios.get(`${serverUrl}/api/random-image`)
       const imagePath = response.data.image;
@@ -82,6 +89,7 @@ function App() {
     if (index >= 0 && index < imageUrls.length){
       lastChangeTime.current = Date.now()
       setTimeLeft(intervalTime)
+      setProgressBar(0)
       elapsedBeforePause.current = 0
       setImageIndex(index)
     }
@@ -146,14 +154,18 @@ function App() {
           {!loading && !error && (
            <img 
             src={currentImage}
-            className='slide-image'
+            className={`slide-image ${!loading ? 'loaded' : ''}`}
             onLoad={() => setLoading(false)}
             onError={() => setError("Failed to load image")}
            /> 
           )}
-          <div className='countdown'>
-            Next: {formatTime(timeLeft)}
-          </div>
+
+        </div>
+        <div className={`countdown`}>
+          Next: {formatTime(timeLeft)}
+        </div>
+        <div className={`progress-bar`} >
+          <div className="progress-bar-inner" style={{width: `${progressBar}%`}} />
         </div>
         <div className="controls">
           <button onClick={handlePreviousImage} disabled={imageIndex <= 0}>

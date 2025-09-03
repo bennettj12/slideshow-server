@@ -1,7 +1,159 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0rem;
-  text-align: center;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+body, html {
+  background-color: rgb(18, 17, 17);
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.app {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.slideshow-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+.slide-image.loaded {
+  opacity: 1;
+}
+
+.countdown,
+.loading,
+.error {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  backdrop-filter: blur(5px);
+  z-index: 10;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: rgba(0,0,0,.2);
+}
+.progress-bar-inner {
+  height: 100%;
+  background-color: rgba(40, 255, 255, 0.394);
+  width: 0%;
+  transition: 0.1s linear;
+}
+
+.countdown {
+  top: 20px;
+  right: 20px;
+}
+
+.loading {
+  top: 50%;
+  left: 50%;
+  transform:translate(-50%, -50%);
+}
+
+.error {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(200, 0, 0, 0.7);
+}
+
+.controls {
+  width: 45%;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding: 15px;
+  background-color: rgba(0,0,0,.3);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  border-radius: 15px;
+  transform: translateX(-50%);
+}
+
+.controls button {
+  padding: 12px 24px;
+  background-color: rgba(0,0,0,0.25);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.controls button:hover:not(:disabled) {
+  background-color: rgba(255,255,255,0.25);
+  transform: translateY(-2px);
+}
+
+.controls button:active {
+  transform: translateY(0);
+}
+
+.controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .countdown,
+  .loading,
+  .error {
+    font-size: 1rem;
+    padding: 10px 10px;
+  }
+  .controls {
+    padding: 10px;
+    gap: 10px;
+  }
+  .controls button {
+    padding: 10px 16px;
+    font-size: 1rem;
+  }
+
+}
+@media (max-width: 480px) {
+  .controls {
+    flex-wrap: wrap;
+  }
+  .countdown {
+    top: 10px;
+    right: 10px;
+  }
+  .error {
+    top: 10px;
+  }
+
+}
