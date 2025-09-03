@@ -113,9 +113,19 @@ app.get('/api/random-image', (req,res) => {
     if(imageList.length == 0){
         return res.status(404).json({error: "No Images Found"});
     }
-    const randomImage = imageList[Math.floor(Math.random() * imageList.length)];
-    res.json({ image: randomImage, 
-        local_url: `http://${localIP}:${PORT}/images/${randomImage.replace(/ /g,'%20')}`
+    const imageIndex = Math.floor(Math.random() * imageList.length)
+    const randomImage = imageList[imageIndex];
+    res.json({ 
+        image: randomImage, 
+        index: imageIndex,
+    })
+})
+app.get('/api/index/:index', (req, res) => {
+    const index = req.params.index
+    const image = imageList[req.params.index]
+    res.json({
+        image: image,
+        index: Number(index)
     })
 })
 
