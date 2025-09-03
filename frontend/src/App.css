@@ -91,11 +91,11 @@ body, html {
 }
 
 .controls {
-  width: 45%;
+  
   position: absolute;
   bottom: 20px;
   left: 50%;
-  right: 0;
+  
   display: flex;
   justify-content: center;
   gap: 15px;
@@ -130,6 +130,61 @@ body, html {
 .controls button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+.controls button:focus {
+  outline: 2px solid #90fdfb;
+}
+.menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  left: 50%;
+  top: 50%;
+  min-width: 40%;
+  min-height: 50%;
+  background-color: rgba(255, 255, 255, 0.6);
+  color: black;
+  padding: 10px 20px;
+  border-radius: 10px;
+  transform: translate(-50%, -50%);
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transition: opacity 0.2s linear;
+  z-index: 20;
+  overflow: scroll;
+}
+.menu div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+}
+.menu button {
+  background-color: rgba(0,0,0,.45);
+  color: white;
+  font-weight: bold;
+  font-size: 1.25rem;
+  padding: 5px 13px;
+  margin-left: 3rem;
+}
+button.submit {
+  margin-left: 0;
+  margin-top: auto;
+  margin-bottom: 1rem;
+}
+.menu .input {
+  background-color: rgba(255, 255, 255, 0.685);
+  border: none;
+  border-radius: 10px;
+  min-width: 150px;
+  margin-left: 2rem;
+  color: black;
+  min-height: 2rem;
+  padding: 5px 10px;
+}
+.visible {
+  opacity: 1;
 }
 
 @media (max-width: 768px) {

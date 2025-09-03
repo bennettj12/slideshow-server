@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import useKeyboardControls from './useKeyboardControls.jsx'
 import './App.css'
 
 import axios from 'axios'
@@ -7,7 +8,10 @@ import axios from 'axios'
 function App() {
   //const [currentImage, setCurrentImage] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
-  const [intervalTime, setIntervalTime] = useState(3600000 * (0) + 60000 * (0) + 1000 * (10)); // default of 10 seconds
+  const [intervalTime, setIntervalTime] = useState(3600000 * (0) + 60000 * (2) + 1000 * (0)); // default of 10 seconds
+
+  const [intervalSeconds, setIntervalSeconds] = useState(Math.floor(intervalTime % 60000) / 1000)
+  const [intervalMinutes, setIntervalMinutes] = useState(Math.floor(intervalTime / 60000))
 
   const [serverUrl, setServerUrl] = useState('http://192.168.0.117:3001')
   const [loading, setLoading] = useState(true)
@@ -25,8 +29,19 @@ function App() {
 
   const [progressBar, setProgressBar] = useState(0);
 
-  //const imageUrls = [];
+  // options
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [timerVisible, setTimerVisible] = useState(true);
+
+
   const LIST_MAX = 100;
+
+  const submitRef = useRef(null)
+  const playButtonRef = useRef(null);
+  const nextButtonRef = useRef(null);
+  const menuButtonRef = useRef(null);
+  const prevButtonRef = useRef(null);
+
 
   // Slideshow timer setup
   useEffect(() => {
@@ -39,7 +54,6 @@ function App() {
           const remaining = Math.max(0, intervalTime - elapsed)
           setTimeLeft(remaining)
           const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
-          console.log(prog)
           setProgressBar(prog)
           if(remaining == 0){
             fetchRandomImage()
@@ -92,7 +106,7 @@ function App() {
       setProgressBar(0)
       elapsedBeforePause.current = 0
       setImageIndex(index)
-      
+
       setLoading(true)
       setInterval(() => {
         setLoading(false)
@@ -107,7 +121,8 @@ function App() {
     fetchRandomImage()
   }, [fetchRandomImage])
 
-  const togglePlaying = () => {
+  const togglePlaying = useCallback(() => {
+    playButtonRef.current.focus()
     if( isPlaying ) {
       elapsedBeforePause.current = Date.now() - lastChangeTime.current
     } else {
@@ -117,8 +132,9 @@ function App() {
 
     setIsPlaying(!isPlaying);
 
-  }
+  }, [isPlaying, elapsedBeforePause, lastChangeTime])
   const handleNextImage = useCallback(() => {
+    nextButtonRef.current.focus();
     if (imageIndex >= imageUrls.length - 1){
       // at most recent image
       fetchRandomImage()
@@ -130,26 +146,80 @@ function App() {
 
   const handlePreviousImage = useCallback(() => {
     if( imageIndex > 0) {
+      prevButtonRef.current.focus()
       goToImage(imageIndex - 1);
     }
-  }, [imageIndex, goToImage])
-  const formatTime = (ms) => {
+  }, [imageIndex, goToImage]);
+
+  const handleOpenMenu = useCallback(() => {
+
+    if(!menuOpen){
+      setIntervalMinutes(Math.floor(intervalTime / 60000));
+      setIntervalSeconds(Math.floor((intervalTime % 60000) / 1000));
+    }
+    setMenuOpen(!menuOpen);
+  }, [setMenuOpen, menuOpen, intervalTime])
+
+  const toggleCountdown = useCallback(() => {
+    setTimerVisible(!timerVisible);
+  }, [setTimerVisible, timerVisible])
+
+  const handleSubmit = () => {
+
+    const milli = (intervalMinutes * 60000) + (intervalSeconds * 1000);
+    if(milli < 1000) {
+      alert("Interval must be at least one second long")
+      return;
+    }
+    setIntervalTime(milli);
+    setTimeLeft(milli)
+    lastChangeTime.current = Date.now()
+    elapsedBeforePause.current = 0
+
+    if(menuOpen){
+      setMenuOpen(false)
+    }
+
+  }
+
+  const breakDownTime = (ms) => {
     const time = {
       hour: Math.floor(ms/ 3600000),
       minute: Math.floor(ms/60000) % 60,
       second: Math.floor(ms/1000) % 60,
       tenth: Math.floor(ms/100) % 10
     }
+    return time
+  }
+  const formatTime = (ms) => {
+    const time = breakDownTime(ms)
     let output = null
     if (ms > 3600000) {
       output = `${time.hour}:${time.minute}:${time.second}.${time.tenth}`
-    } else if (ms > 60000) {
+    } else if (ms >= 60000) {
       output = `${time.minute}:${time.second}.${time.tenth}`
     } else {
       output = `${time.second}.${time.tenth}`
     }
     return output
   }
+
+  /// Keyboard/button controls:
+  useKeyboardControls({
+    ' ': togglePlaying,
+    'MediaPlayPause': togglePlaying,
+    'NavigateNext': handleNextImage,
+    'NavigatePrevious': handlePreviousImage,
+    'ArrowLeft': handlePreviousImage,
+    'ArrowRight': handleNextImage,
+    'Escape': () => setMenuOpen(false),
+    'm': () => setMenuOpen(prev => !prev),
+    'Enter': menuOpen ? handleSubmit : null,
+  })
+
+
+
+
   return (
     <>
       <div className='app'>
@@ -166,24 +236,53 @@ function App() {
           )}
 
         </div>
-        <div className={`countdown`}>
-          Next: {formatTime(timeLeft)}
-        </div>
+        {
+          timerVisible && (
+            <div className={`countdown`}>
+              {formatTime(timeLeft)}
+            </div>
+          )
+        }
+
         <div className={`progress-bar`} >
           <div className="progress-bar-inner" style={{width: `${progressBar}%`}} />
         </div>
         <div className="controls">
-          <button onClick={handlePreviousImage} disabled={imageIndex <= 0}>
+          <button ref={prevButtonRef} onClick={handlePreviousImage} disabled={imageIndex <= 0}>
             Previous
           </button>
-          <button onClick={togglePlaying}>
+          <button ref={playButtonRef} onClick={togglePlaying}>
             {isPlaying ? 'Pause' : 'Play'}
           </button>
-          <button onClick={handleNextImage}>
+          <button ref={nextButtonRef} onClick={handleNextImage}>
             Next
           </button>
+          <button ref={menuButtonRef} onClick={handleOpenMenu}>
+            {menuOpen ? 'Close' : 'Options'}
+          </button>
         </div>
-
+          <div aria-hidden={!menuOpen} inert={!menuOpen} className={`menu ${menuOpen ? 'visible' : ''}`}> 
+            <div> 
+              <h2>Configuration</h2>
+              <button onClick={handleSubmit}>X</button>
+            </div>
+            <hr />
+            <div>
+              <h3>Interval (minutes)</h3>
+              <input type='tel' onChange={e => setIntervalMinutes(parseInt(e.target.value) || 0)} value={intervalMinutes} className='input'/>
+            </div>
+            <div>
+              <h3>Interval (seconds)</h3>
+              <input type='tel' onChange={e => setIntervalSeconds(parseInt(e.target.value) || 0)} value={intervalSeconds} className='input'/>
+            </div>
+            <div>
+              <h3>Show Countdown</h3>
+              <button onClick={toggleCountdown}>
+                {timerVisible ? 'On' : 'Off'}
+              </button>
+            </div>
+            <button ref={submitRef} className='submit' onClick={handleSubmit}>Submit</button>
+          </div>
       </div>
     </>
   )
