@@ -3,6 +3,11 @@ import useKeyboardControls from './useKeyboardControls.jsx'
 import './App.css'
 
 import axios from 'axios'
+import useIdleTimer from './useIdleTimer.jsx'
+import useFullscreen from './useFullscreen.jsx'
+
+// Icons
+import { MdClose, MdFullscreen, MdCloseFullscreen , MdPause , MdPlayArrow, MdNavigateNext, MdNavigateBefore, MdSettings } from "react-icons/md";
 
 
 function App() {
@@ -20,6 +25,8 @@ function App() {
   const [imageUrls, setImageUrls] = useState([])
   const [imageIndex, setImageIndex] = useState(-1)
 
+  const [controlsVisible, setControlsVisible] = useState(true);
+
   const currentImage = imageIndex >= 0 ? imageUrls[imageIndex]: '';
 
   // time tracking
@@ -32,6 +39,7 @@ function App() {
   // options
   const [menuOpen, setMenuOpen] = useState(false);
   const [timerVisible, setTimerVisible] = useState(true);
+  const [progressBarVisible, setProgressBarVisible] = useState(true);
 
 
   const LIST_MAX = 100;
@@ -41,6 +49,10 @@ function App() {
   const nextButtonRef = useRef(null);
   const menuButtonRef = useRef(null);
   const prevButtonRef = useRef(null);
+
+  const idleTimer = useIdleTimer(3000);
+
+  const { isFullscreen, toggleFullscreen, fullscreenElementRef } = useFullscreen();
 
 
   // Slideshow timer setup
@@ -65,6 +77,15 @@ function App() {
       if (countdownInterval) clearInterval(countdownInterval)
     }
   }, [isPlaying, intervalTime, progressBar])
+
+
+  // idle timer logic
+  useEffect(() => {
+    setControlsVisible(!idleTimer.isIdle)
+    if(idleTimer.isIdle){
+      document.activeElement.blur()
+    }
+  }, [idleTimer])
 
   const fetchRandomImage = useCallback(async () => {
     try {
@@ -212,9 +233,15 @@ function App() {
     'NavigatePrevious': handlePreviousImage,
     'ArrowLeft': handlePreviousImage,
     'ArrowRight': handleNextImage,
-    'Escape': () => setMenuOpen(false),
+    'Escape': () => {
+      if(!menuOpen && isFullscreen){
+        toggleFullscreen();
+      }
+      setMenuOpen(false)
+    },
     'm': () => setMenuOpen(prev => !prev),
     'Enter': menuOpen ? handleSubmit : null,
+    'f': toggleFullscreen,
   })
 
 
@@ -243,28 +270,37 @@ function App() {
             </div>
           )
         }
+        {
+          progressBarVisible && (
+            <div className={`progress-bar`} >
+              <div className="progress-bar-inner" style={{width: `${progressBar}%`}} />
+            </div>
+          )
+        }
 
-        <div className={`progress-bar`} >
-          <div className="progress-bar-inner" style={{width: `${progressBar}%`}} />
-        </div>
-        <div className="controls">
+        <div className={`controls ${controlsVisible ? '' : 'idle'}`}>
           <button ref={prevButtonRef} onClick={handlePreviousImage} disabled={imageIndex <= 0}>
-            Previous
+            < MdNavigateBefore />
           </button>
           <button ref={playButtonRef} onClick={togglePlaying}>
-            {isPlaying ? 'Pause' : 'Play'}
+            {
+              isPlaying ? <MdPause /> : <MdPlayArrow />
+            }
           </button>
           <button ref={nextButtonRef} onClick={handleNextImage}>
-            Next
+            < MdNavigateNext />
           </button>
           <button ref={menuButtonRef} onClick={handleOpenMenu}>
-            {menuOpen ? 'Close' : 'Options'}
+            {menuOpen ? <MdClose /> : <MdSettings />}
           </button>
         </div>
+        <button onClick={toggleFullscreen} className={`fullscreen ${controlsVisible ? '' : 'idle'}`}>
+          {isFullscreen ? <MdCloseFullscreen /> : <MdFullscreen />}
+        </button>
           <div aria-hidden={!menuOpen} inert={!menuOpen} className={`menu ${menuOpen ? 'visible' : ''}`}> 
             <div> 
               <h2>Configuration</h2>
-              <button onClick={handleSubmit}>X</button>
+              <button onClick={handleOpenMenu}><MdClose /></button>
             </div>
             <hr />
             <div>
@@ -279,6 +315,12 @@ function App() {
               <h3>Show Countdown</h3>
               <button onClick={toggleCountdown}>
                 {timerVisible ? 'On' : 'Off'}
+              </button>
+            </div>
+            <div>
+              <h3>Show Progress Bar</h3>
+              <button onClick={() => setProgressBarVisible(!progressBarVisible)}>
+                {progressBarVisible ? 'On' : 'Off'}
               </button>
             </div>
             <button ref={submitRef} className='submit' onClick={handleSubmit}>Submit</button>
