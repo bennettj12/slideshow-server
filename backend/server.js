@@ -22,10 +22,13 @@ const chokidar = require('chokidar');
 
 // init server
 const app = express();
-const PORT = 3001;
+const PORT = process.env.SLIDESHOW_PORT || 3001;
+
+let server;
 
 app.use(cors());
 app.use(express.json());
+
 
 const nets = networkInterfaces();
 const localIP = nets['Wi-Fi'][1]['address'];
@@ -38,7 +41,7 @@ let config = {
 
 if (!fs.existsSync(config.imageDirectory)){
     console.log(`ERROR: ${config.imageDirectory} not found`)
-    process.exit()
+    return process.exit()
 }
 
 let imageList = [];
@@ -129,7 +132,6 @@ app.get('/api/index/:index', (req, res) => {
 app.use('/images', express.static(config.imageDirectory));
 
 
-
 async function initialize(){
     console.log("Building list of images")
     await updateImageList();
@@ -139,7 +141,9 @@ async function initialize(){
 }
 
 initialize().catch(console.error).then(() => {
-    app.listen(PORT, '0.0.0.0', () => {
+
+
+    server = app.listen(PORT, '0.0.0.0', () => {
         console.log(`Slideshow server running on http://localhost:${PORT}`)
         console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
     })
