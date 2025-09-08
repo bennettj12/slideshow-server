@@ -32,11 +32,8 @@ const localIP = nets['Wi-Fi'][1]['address'];
 
 const results = Object.create(null);
 
-// Storing interval on backend maybe is not needed. If we want to use a simple image retrieval API we could handle 
-// timing and intervals on the frontend side...
 let config = {
-    imageDirectory: path.join(__dirname, 'sample-images'),
-    interval: 60000 // Default 60 seconds.
+    imageDirectory: process.env.IMAGE_FOLDER || path.join(__dirname, 'sample-images'),
 }
 
 if (!fs.existsSync(config.imageDirectory)){

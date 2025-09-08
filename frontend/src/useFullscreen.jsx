@@ -32,7 +32,7 @@ const useFullscreen = () => {
         } else if (document.msExitFullscreen) { // IE/Edge
             document.msExitFullscreen();
         }
-    })
+    }, [])
 
     const toggleFullscreen = useCallback(() => {
         if (isFullscreen){

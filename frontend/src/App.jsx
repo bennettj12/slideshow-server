@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import useKeyboardControls from './useKeyboardControls.jsx'
+
+import { useSettings } from './SettingsContext.jsx'
+
 import './App.css'
 
 import axios from 'axios'
@@ -11,14 +14,23 @@ import { MdClose, MdFullscreen, MdCloseFullscreen , MdPause , MdPlayArrow, MdNav
 
 
 function App() {
-  //const [currentImage, setCurrentImage] = useState('')
+
+  const {
+    intervalTime,
+    setIntervalTime,
+    timerVisible,
+    setTimerVisible,
+    serverUrl,
+    setServerUrl,
+    progressBarVisible,
+    setProgressBarVisible
+  } = useSettings();
+
   const [isPlaying, setIsPlaying] = useState(false)
-  const [intervalTime, setIntervalTime] = useState(3600000 * (0) + 60000 * (2) + 1000 * (0)); // default of 10 seconds
 
   const [intervalSeconds, setIntervalSeconds] = useState(Math.floor(intervalTime % 60000) / 1000)
   const [intervalMinutes, setIntervalMinutes] = useState(Math.floor(intervalTime / 60000))
 
-  const [serverUrl, setServerUrl] = useState('http://192.168.0.117:3001')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -38,8 +50,6 @@ function App() {
 
   // options
   const [menuOpen, setMenuOpen] = useState(false);
-  const [timerVisible, setTimerVisible] = useState(true);
-  const [progressBarVisible, setProgressBarVisible] = useState(true);
 
 
   const LIST_MAX = 100;
@@ -52,7 +62,7 @@ function App() {
 
   const idleTimer = useIdleTimer(3000);
 
-  const { isFullscreen, toggleFullscreen, fullscreenElementRef } = useFullscreen();
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
 
   // Slideshow timer setup

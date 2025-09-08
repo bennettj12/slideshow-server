@@ -12,6 +12,7 @@
   "dependencies": {
     "chokidar": "^4.0.3",
     "cors": "^2.8.5",
+    "electron": "^38.0.0",
     "express": "^5.1.0",
     "react-icons": "^5.5.0"
   },
