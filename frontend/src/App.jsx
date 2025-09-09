@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import useKeyboardControls from './useKeyboardControls.jsx'
 
 import { useSettings } from './SettingsContext.jsx'
@@ -12,6 +12,7 @@ import useFullscreen from './useFullscreen.jsx'
 // Icons
 import { MdClose, MdFullscreen, MdCloseFullscreen , MdPause , MdPlayArrow, MdNavigateNext, MdNavigateBefore, MdSettings } from "react-icons/md";
 
+import NoSleep from '@zakj/no-sleep'
 
 function App() {
 
@@ -64,38 +65,8 @@ function App() {
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
+  const noSleep = useMemo(() => new NoSleep(), [])
 
-  // Slideshow timer setup
-  useEffect(() => {
-
-    let countdownInterval = null
-    if( isPlaying ) {
-      countdownInterval = setInterval(() => {
-        if(isPlaying){
-          const elapsed = Date.now() - lastChangeTime.current;
-          const remaining = Math.max(0, intervalTime - elapsed)
-          setTimeLeft(remaining)
-          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
-          setProgressBar(prog)
-          if(remaining == 0){
-            fetchRandomImage()
-          }
-        }
-      }, 100)
-    }
-    return () => {
-      if (countdownInterval) clearInterval(countdownInterval)
-    }
-  }, [isPlaying, intervalTime, progressBar])
-
-
-  // idle timer logic
-  useEffect(() => {
-    setControlsVisible(!idleTimer.isIdle)
-    if(idleTimer.isIdle){
-      document.activeElement.blur()
-    }
-  }, [idleTimer])
 
   const fetchRandomImage = useCallback(async () => {
     try {
@@ -128,7 +99,41 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [serverUrl])
+  }, [intervalTime])
+
+
+  // Slideshow timer setup
+  useEffect(() => {
+    let countdownInterval = null
+    if( isPlaying ) {
+      countdownInterval = setInterval(() => {
+        if(isPlaying){
+          const elapsed = Date.now() - lastChangeTime.current;
+          const remaining = Math.max(0, intervalTime - elapsed)
+          setTimeLeft(remaining)
+          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
+          setProgressBar(prog)
+          if(remaining == 0){
+            fetchRandomImage()
+          }
+        }
+      }, 100)
+      // wake lock when isPlaying
+      
+    }
+    return () => {
+      if (countdownInterval) clearInterval(countdownInterval)
+    }
+  }, [isPlaying, intervalTime, progressBar, fetchRandomImage])
+
+
+  // idle timer logic
+  useEffect(() => {
+    setControlsVisible(!idleTimer.isIdle)
+    if(idleTimer.isIdle){
+      document.activeElement.blur()
+    }
+  }, [idleTimer])
 
   const goToImage = useCallback((index) => {
     if (index >= 0 && index < imageUrls.length){
@@ -143,7 +148,7 @@ function App() {
         setLoading(false)
       }, 100)
     }
-  }, [imageUrls.length])
+  }, [imageUrls.length, intervalTime])
 
 
 
@@ -156,14 +161,16 @@ function App() {
     playButtonRef.current.focus()
     if( isPlaying ) {
       elapsedBeforePause.current = Date.now() - lastChangeTime.current
+      noSleep.disable()
     } else {
       lastChangeTime.current = Date.now() - elapsedBeforePause.current
+      noSleep.enable()
     }
 
 
     setIsPlaying(!isPlaying);
 
-  }, [isPlaying, elapsedBeforePause, lastChangeTime])
+  }, [isPlaying, elapsedBeforePause, lastChangeTime, noSleep])
   const handleNextImage = useCallback(() => {
     nextButtonRef.current.focus();
     if (imageIndex >= imageUrls.length - 1){

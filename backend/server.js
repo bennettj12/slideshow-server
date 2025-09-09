@@ -14,9 +14,6 @@ const fs = require('fs');
 // cors
 const cors = require('cors');
 
-// for getting the server's IP
-const { networkInterfaces } = require('os');
-
 // chokidar allows us to add/remove from image directory without reseting the server?
 const chokidar = require('chokidar');
 
@@ -39,13 +36,7 @@ let server;
 app.use(cors());
 app.use(express.json());
 
-
-
 const localIP = ip.address();
-
-const results = Object.create(null); 
-
-
 
 
 
