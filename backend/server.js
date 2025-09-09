@@ -20,9 +20,19 @@ const { networkInterfaces } = require('os');
 // chokidar allows us to add/remove from image directory without reseting the server?
 const chokidar = require('chokidar');
 
+const ip = require('ip')
+
+
+
 // init server
 const app = express();
 const PORT = process.env.SLIDESHOW_PORT || 3001;
+const FRONTEND_BUILD_PATH = process.env.FRONTEND_BUILD_PATH || 
+    path.join(__dirname, '../frontend/dist');
+
+let config = {
+    imageDirectory: process.env.IMAGE_FOLDER || path.join(__dirname, 'sample-images'),
+}
 
 let server;
 
@@ -30,14 +40,14 @@ app.use(cors());
 app.use(express.json());
 
 
-const nets = networkInterfaces();
-const localIP = nets['Wi-Fi'][1]['address'];
 
-const results = Object.create(null);
+const localIP = ip.address();
 
-let config = {
-    imageDirectory: process.env.IMAGE_FOLDER || path.join(__dirname, 'sample-images'),
-}
+const results = Object.create(null); 
+
+
+
+
 
 if (!fs.existsSync(config.imageDirectory)){
     console.log(`ERROR: ${config.imageDirectory} not found`)
@@ -66,12 +76,12 @@ function watchDirectory() {
         ignoreInitial: true,
     });
     watcher
-        .on('add', path => {
-            console.log(`File ${path} added`);
+        .on('add', filepath => {
+            console.log(`File ${filepath} added`);
             updateImageList();
         })
-        .on('unlink', path => {
-            console.log(`File ${path} removed`);
+        .on('unlink', filepath => {
+            console.log(`File ${filepath} removed`);
             updateImageList()
         })
 }
@@ -107,7 +117,13 @@ async function getImageFilesRecursive(dir) {
 }
 
 
+
+app.use('/images', express.static(config.imageDirectory));
+
+app.use(express.static(FRONTEND_BUILD_PATH))
+
 // API Endpoint: get random image
+
 
 app.get('/api/random-image', (req,res) => {
     if(imageList.length == 0){
@@ -129,7 +145,6 @@ app.get('/api/index/:index', (req, res) => {
     })
 })
 
-app.use('/images', express.static(config.imageDirectory));
 
 
 async function initialize(){

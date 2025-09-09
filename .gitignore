@@ -1,2 +1,3 @@
 backend/sample-images
 node_modules
+dist-electron/

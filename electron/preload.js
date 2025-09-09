@@ -7,6 +7,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     onFolderSelected: (callback) => {
         ipcRenderer.on('folder-selected', callback);
+    },
+    onServerStarted: (callback) => {
+        ipcRenderer.on('server-started', callback)
+    },
+    onIpFound: (callback) => {
+        ipcRenderer.on('ip-found', callback)
+    },
+    onServerEnded: (callback) => {
+        ipcRenderer.on('server-ended', callback)
     }
 })
 

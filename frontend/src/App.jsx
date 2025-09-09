@@ -107,9 +107,9 @@ function App() {
       setTimeLeft(intervalTime)
       setProgressBar(0)
 
-      const response = await axios.get(`${serverUrl}/api/random-image`)
+      const response = await axios.get('/api/random-image')
       const imagePath = response.data.image;
-      const imageUrl = `${serverUrl}/images/${encodeURIComponent(imagePath)}`
+      const imageUrl = `/images/${encodeURIComponent(imagePath)}`
       
       setImageUrls(prev => {
         const newUrls = [...prev, imageUrl];

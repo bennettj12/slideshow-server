@@ -16,7 +16,7 @@ export const SettingsProvider = ({ children }) => {
     const [intervalTime, setIntervalTime] = useLocalStorage('intervalTime', 3600000 * (0) + 60000 * (2) + 1000 * (0));
     const [timerVisible, setTimerVisible] = useLocalStorage('timerVisible', true);
     const [progressBarVisible, setProgressBarVisible] = useLocalStorage('progressBarVisible', true);
-    const [serverUrl, setServerUrl] = useLocalStorage('serverUrl','http://192.168.0.117:3001');
+    const [serverUrl, setServerUrl] = useLocalStorage('serverUrl',`http://192.168.0.117:3001`);
 
     const value = {
         intervalTime,

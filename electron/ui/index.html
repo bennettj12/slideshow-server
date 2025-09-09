@@ -56,6 +56,10 @@
             background-color: #d4edda;
             color: #155724;
         }
+        .status.loading {
+            background-color: coral;
+            color: rgb(52, 21, 10);
+        }
         .status.disconnected {
             background-color: #f8d7da;
             color: #721c24;
@@ -75,6 +79,7 @@
         </div>
 
         <div id="status" class="status" style="display: none"></div>
+        <div id="netStatus" class="status" style="display: none"></div>
 
 
     </div>
@@ -90,9 +95,25 @@
             document.getElementById('folder-path').textContent = path;
 
             document.getElementById('status').style.display = 'block';
-            document.getElementById('status').textContent = status;
-            document.getElementById('status').className = 'status connected';
+            document.getElementById('status').textContent = 'server starting';
+            document.getElementById('status').className = 'status loading';
             
+        })
+        window.electronAPI.onServerStarted( async (event, data) => {
+
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('status').textContent = data;
+            document.getElementById('status').className = 'status connected';
+        })
+        window.electronAPI.onServerEnded( async (event, data) => {
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('status').textContent = "server shut down";
+            document.getElementById('status').className = 'status disconnected';
+        })
+
+        window.electronAPI.onIpFound(async (event, data) => {
+            document.getElementById('netStatus').style.display = 'block';
+            document.getElementById('netStatus').textContent = data;
         })
 
         window.addEventListener('DOMContentLoaded', async () => {

@@ -1,9 +1,13 @@
 {
   "name": "slideshow-server",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.1",
+  "description": "An app which hosts a timed interval slideshow. Ideal for a simple digital photo frame or for timed art practice.",
+  "main": "electron/main.js",
   "scripts": {
+    "build-frontend": "cd frontend && npm run build",
+    "build-electron": "npm run build-frontend && electron-builder --win",
+    "build-electron-dir": "npm run build-frontend && electron-builder --dir",
+    "electron": "electron electron/main.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "electron-dev": "cross-env NODE_ENV=development electron electron/main.js"
   },
@@ -14,6 +18,7 @@
     "chokidar": "^4.0.3",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "ip": "^2.0.1",
     "react-icons": "^5.5.0"
   },
   "devDependencies": {
@@ -21,5 +26,40 @@
     "electron": "^38.0.0",
     "electron-builder": "^24.0.12",
     "vite-plugin-pwa": "^1.0.3"
+  },
+  "build": {
+    "appId": "com.bennett.art-slideshow",
+    "productName": "Art Slideshow",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json",
+      "icon.ico"
+    ],
+    "asarUnpack":[
+      "node_modules/**"
+    ],
+    "extraResources": [
+      {
+        "from": "frontend/dist",
+        "to": "frontend-build",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "backend",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    }
   }
 }
