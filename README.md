@@ -8,10 +8,10 @@ The client is also capable of pausing, viewing previous images, and skipping, an
 
 Useful for:
 
-- Creating digital picture frames/slideshow
+- Creating digital picture frames/art gallery without any cloud services
 - Croquis/timed art practice
 
-Set up:
+Usage:
 
 1. Open the app
 2. Press 'select folder' and navigate to a folder with images, confirm by pressing 'select folder' in the navigator.
