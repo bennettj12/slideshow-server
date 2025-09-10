@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     selectFolder: () => ipcRenderer.invoke('select-folder'),
     getConfig: () => ipcRenderer.invoke('get-config'),
     getStatus: () => ipcRenderer.invoke('get-status'),
+    closeButtonPressed: () => ipcRenderer.invoke('close-button-pressed'),
+    minimizeButtonPressed: () => ipcRenderer.invoke('minimize-button-pressed'),
 
     onFolderSelected: (callback) => {
         ipcRenderer.on('folder-selected', callback);

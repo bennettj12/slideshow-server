@@ -4,23 +4,35 @@
     <meta charset="UTF-8">
     <title>Config</title>
     <style>
+        *{
+            box-sizing: border-box;
+        }
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #ffffff00;
+            background-color: #ff000000;
+            min-height: 0;
+            display: flex;
         }
         .container {
-            max-width: 500px;
-            margin: 0 auto;
+            width: 100%;
+            bottom: 0px;
             background: white;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 25px;
             box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+            height: 500px;
+            overflow-y: scroll;
+        }
+        ::-webkit-scrollbar {
+            display: none;
         }
         h1 {
             margin: 0;
             color: #333;
+            font-size: 1.5rem;
+            border-bottom: 1px solid black;
+            padding-bottom: 12px;
         }
         h3 {
             color: #333;
@@ -64,10 +76,34 @@
             background-color: #f8d7da;
             color: #721c24;
         }        
+        .controls {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+        }
+        .controls button {
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            color: white;
+            width: 30px;
+            height: 30px;
+            background-color: #523538;
+            transition: all .3s ease;
+        }
+        .controls button:hover {
+            background-color: #856f81;
+        }
+        .controls button:active {
+            background-color: #d1bdcd;
+        }
     </style>
 </head>
 <body>
-    
+    <div class="controls">
+        <button id="minimize" class="minimize">-</button>
+        <button id="close" class="close">X</button>
+    </div>
     <div class="container">
         <h1>Slideshow Configuration</h1>
         <p>Select folder for slideshow:</p>
@@ -87,6 +123,13 @@
     <script>
         document.getElementById('select-folder').addEventListener('click', async () => {
             await window.electronAPI.selectFolder();
+        })
+
+        document.getElementById('close').addEventListener('click', async () => {
+            window.electronAPI.closeButtonPressed();
+        })
+        document.getElementById('minimize').addEventListener('click', async () => {
+            window.electronAPI.minimizeButtonPressed();
         })
 
         window.electronAPI.onFolderSelected(async (event, path) => {

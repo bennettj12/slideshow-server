@@ -9,6 +9,7 @@ let backendProcess;
 let config = {
     imageFolder: null,
     port: 3001,
+    localIP: null,
 }
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -35,13 +36,16 @@ const getBackendPath = () => {
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 640,
-        height: 480,
+        width: 400,
+        height: 500,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            preload: path.join(__dirname, 'preload.js')
+            preload: path.join(__dirname, 'preload.js'),
         },
+        frame: false,
+        transparent: true,
+        resizable: true,
         icon: path.join(__dirname, '../icon.ico'),
         show: false
     })
@@ -57,6 +61,14 @@ function createWindow() {
     })
 
     mainWindow.once('ready-to-show', () => {
+        if(tray){
+            const trayBounds = tray.getBounds();
+            const windowBounds = mainWindow.getBounds();
+
+            const x = Math.round(trayBounds.x - (windowBounds.width / 2) + (trayBounds.width /2));
+            const y = trayBounds.y - windowBounds.height;
+            mainWindow.setPosition(x, y, false);
+        }
         mainWindow.show();
     })
 }
@@ -96,28 +108,13 @@ function createTray() {
     tray.setContextMenu(contextMenu);
 
     tray.on('double-click', () => {
-        mainWindow.show();
+        if(mainWindow.isVisible()){
+            mainWindow.hide();
+        } else {
+            mainWindow.show();
+        }
     })
 
-}
-function getNodePath() {
-    if (isDev){
-        return 'node'
-    }
-
-    const possiblePaths = [
-        path.join(process.resourcesPath, '..', 'node.exe'),
-        path.join(process.resourcesPath, 'node.exe'),
-        path.join(process.resourcesPath, 'bin', 'node.exe'),
-    ]
-    for (const nodePath of possiblePaths) {
-      if (fs.existsSync(nodePath)) {
-        console.log('Found Node.js at:', nodePath);
-        return nodePath;
-      }
-    }
-    console.warn('Node.js not found in resources, falling back to system PATH');
-    return 'node';
 }
 
 function startBackend() {
@@ -159,7 +156,12 @@ function startBackend() {
 
         if(data.includes('Slideshow server running')) {
             if(mainWindow && !mainWindow.isDestroyed()){
-                mainWindow.webContents.send('server-started', getStatus())
+                const address = getStatus();
+                mainWindow.webContents.send('server-started', address)
+                config.localAddress = address;
+                if(tray){
+                    tray.setToolTip(`Server is running, accessible at:\n${address}`)
+                }
             }
         }
 
@@ -236,6 +238,31 @@ ipcMain.handle('get-config', async () => {
 })
 ipcMain.handle('get-status', async () => {
     return getStatus();
+})
+ipcMain.handle('close-button-pressed', async () => {
+    const options = {
+        type: 'question',
+        buttons: ['Hide to Tray', 'Quit', 'Cancel'],
+        defaultId: 0,
+        cancelId: 2,
+        title: 'Confirm',
+        message: 'Choose an option',
+        detail: 'You can hide the app to tray to run in the background, or fully quit.'
+    }
+    const response = await dialog.showMessageBox(null, options);
+    if(response.response === 0){
+        mainWindow.hide();
+        return 'hide to tray';
+    } else if (response.response === 1) {
+        app.quit();
+        return 'quit';
+    } else {
+        return 'cancelled';
+    }
+})
+ipcMain.handle('minimize-button-pressed', async () => {
+    mainWindow.hide();
+    return 'hide to tray'
 })
 
 app.whenReady().then(() => {

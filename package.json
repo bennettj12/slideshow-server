@@ -1,6 +1,6 @@
 {
   "name": "slideshow-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An app which hosts a timed interval slideshow. Ideal for a simple digital photo frame or for timed art practice.",
   "main": "electron/main.js",
   "scripts": {
