@@ -17,7 +17,7 @@ export const SettingsProvider = ({ children }) => {
     const [timerVisible, setTimerVisible] = useLocalStorage('timerVisible', true);
     const [progressBarVisible, setProgressBarVisible] = useLocalStorage('progressBarVisible', true);
     const [serverUrl, setServerUrl] = useLocalStorage('serverUrl',`http://192.168.0.117:3001`);
-    const [scaleMode, setScaleMode] = useLocalStorage('scaleMode','contain');
+    const [scaleMode, setScaleMode] = useLocalStorage('scaleMode','Resize');
     const [panImage, setPanImage] = useLocalStorage('panImage', false);
 
     const value = {
