@@ -152,7 +152,7 @@ function App() {
           const elapsed = Date.now() - lastChangeTime.current;
           const remaining = Math.max(0, intervalTime - elapsed)
           setTimeLeft(remaining)
-          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 33;
+          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
           setProgressBar(prog)
           setPanOffset(prog)
           if(remaining == 0){
