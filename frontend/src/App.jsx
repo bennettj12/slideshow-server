@@ -52,8 +52,6 @@ function App() {
   const elapsedBeforePause = useRef(0);
 
   const [progressBar, setProgressBar] = useState(0);
-  // pan position will be synced with the time between transitions.
-  const [panPosition, setPanPosition] = useState(50)
   // options
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -66,11 +64,89 @@ function App() {
   const menuButtonRef = useRef(null);
   const prevButtonRef = useRef(null);
 
+  //image refs
+  const imageRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const progRef = useRef(null);
+
   const idleTimer = useIdleTimer(3000);
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const noSleep = useMemo(() => new NoSleep(), [])
+
+  const updateImageDimensions = useCallback(() => {
+      const image = imageRef.current;
+      const container = containerRef.current;
+      if(!image || !container) {
+        console.log("no ref so not updating")
+        return;
+      };
+      if (scaleMode === 'Crop') {
+        const cWidth = container.clientWidth;
+        const cHeight = container.clientHeight;
+        const iWidth = image.naturalWidth;
+        const iHeight = image.naturalHeight
+
+        const containerRatio = cWidth / cHeight;
+        const imageRatio = iWidth / iHeight;
+
+        let scale, displayWidth, displayHeight;
+
+        if(imageRatio > containerRatio) {
+          // wider than container
+          scale = cHeight / iHeight;
+          displayHeight = cHeight;
+          displayWidth = iWidth * scale;
+        } else {
+          // taller than container
+          scale = cWidth / iWidth;
+          displayWidth = cWidth;
+          displayHeight = iHeight * scale;
+        }
+        image.style.width = `${displayWidth}px`;
+        image.style.height = `${displayHeight}px`
+
+        const panDistX = displayWidth - cWidth;
+        const panDistY = displayHeight - cHeight;
+        if (!panImage) {
+          // do not pan image
+          const translateX = -panDistX * 0.5;
+          const translateY = -panDistY * 0.5;
+          image.style.transform = `translate(${translateX}px, ${translateY}px)`;
+          image.style.left = '0';
+          image.style.top = '0';
+          image.style.maxWidth = 'none';
+          image.style.maxHeight = 'none';
+        } else {
+          // pan image
+          const initial = (progRef.current) ? progRef.current : 0;
+          const translateX = -panDistX * initial;
+          const translateY = -panDistY * initial;
+          image.style.transform = `translate(${translateX}px, ${translateY}px)`;
+          image.style.left = '0';
+          image.style.top = '0';
+          image.style.maxWidth = 'none';
+          image.style.maxHeight = 'none';
+        }
+      } else {
+        // contain
+        image.style.transform = 'translate(-50%, -50%)';
+        image.style.left = '50%';
+        image.style.top = '50%';
+        image.style.maxWidth = '100%';
+        image.style.maxHeight = '100%';
+        image.style.width = 'auto';
+        image.style.height = 'auto'
+      }
+      
+  }, [scaleMode, panImage])
+
+  // update dimensions when scalemode or panimage changed
+  useEffect(() => {
+    updateImageDimensions();
+  }, [scaleMode, panImage, updateImageDimensions])
 
 
   const fetchRandomImage = useCallback(async () => {
@@ -96,7 +172,7 @@ function App() {
         const newIndex = prev < 0 ? 0 : prev + 1;
         return Math.min(newIndex, LIST_MAX - 1)
       })
-
+      
 
     } catch (err) {
       setError('Failed to load image');
@@ -105,33 +181,23 @@ function App() {
       setLoading(false);
     }
   }, [intervalTime])
-
-  const setPanOffset = useCallback((progress) => {
-    if(!isPlaying || scaleMode !== 'cover' || !panImage) {
-      setPanPosition(50);
-      return;
-    }
-    setPanPosition(progress)
-
-  }, [scaleMode, isPlaying, panImage, setPanPosition])
-
   const goToImage = useCallback((index) => {
     if (index >= 0 && index < imageUrls.length){
       lastChangeTime.current = Date.now()
+      elapsedBeforePause.current = 0
       setTimeLeft(intervalTime)
       setProgressBar(0)
-      elapsedBeforePause.current = 0
+
       setImageIndex(index)
-      setLoading(true)
-      setInterval(() => {
-        setLoading(false)
-      }, 100)
+      
+      // setInterval(() => {
+      //   setLoading(false)
+      // }, 100)
     }
   }, [imageUrls.length, intervalTime])
 
   const handleNextImage = useCallback(() => {
     nextButtonRef.current.focus();
-    setPanOffset(0);
     if (imageIndex >= imageUrls.length - 1){
       // at most recent image
       fetchRandomImage()
@@ -139,32 +205,94 @@ function App() {
       // we are not at the end of image array, so we will just go to the next one already in the array.
       goToImage(imageIndex + 1)
     }
-  }, [imageIndex, imageUrls.length, goToImage, fetchRandomImage, setPanOffset])
+  }, [imageIndex, imageUrls.length, goToImage, fetchRandomImage])
+
   // Slideshow timer and panning
   useEffect(() => {
     let frameId = null
 
     const animate = () => {
-      if (!isPlaying) return
+      if (!isPlaying || !containerRef.current || !imageRef.current) return
+
       const elapsed = Date.now() - lastChangeTime.current;
       const remaining = Math.max(0, intervalTime - elapsed)
       setTimeLeft(remaining)
-      const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
-      setProgressBar(prog)
-      setPanOffset(prog)
+      const prog = Math.min(1, elapsed / intervalTime);
+      setProgressBar(prog * 100)
+
+      const image = imageRef.current;
+      const container = containerRef.current;
+      if (scaleMode === 'Crop') {
+        const cWidth = container.clientWidth;
+        const cHeight = container.clientHeight;
+        const iWidth = image.naturalWidth;
+        const iHeight = image.naturalHeight
+
+        const containerRatio = cWidth / cHeight;
+        const imageRatio = iWidth / iHeight;
+
+        let scale, displayWidth, displayHeight;
+
+        if(imageRatio > containerRatio) {
+          // wider than container
+          scale = cHeight / iHeight;
+          displayHeight = cHeight;
+          displayWidth = iWidth * scale;
+        } else {
+          // taller than container
+          scale = cWidth / iWidth;
+          displayWidth = cWidth;
+          displayHeight = iHeight * scale;
+        }
+        image.style.width = `${displayWidth}px`;
+        image.style.height = `${displayHeight}px`
+
+        const panDistX = displayWidth - cWidth;
+        const panDistY = displayHeight - cHeight;
+        if (!panImage) {
+          // do not pan image
+          const translateX = -panDistX * 0.5;
+          const translateY = -panDistY * 0.5;
+          image.style.transform = `translate(${translateX}px, ${translateY}px)`;
+          image.style.left = '0';
+          image.style.top = '0';
+          image.style.maxWidth = 'none';
+          image.style.maxHeight = 'none';
+        } else {
+          // pan image
+          progRef.current = prog;
+          const translateX = -panDistX * prog;
+          const translateY = -panDistY * prog;
+          image.style.transform = `translate(${translateX}px, ${translateY}px)`;
+          image.style.left = '0';
+          image.style.top = '0';
+          image.style.maxWidth = 'none';
+          image.style.maxHeight = 'none';
+        }
+      } else {
+        // contain
+        image.style.transform = 'translate(-50%, -50%)';
+        image.style.left = '50%';
+        image.style.top = '50%';
+        image.style.width = 'auto';
+        image.style.height = 'auto';
+        image.style.maxWidth = '100%';
+        image.style.maxHeight = '100%';
+      }
+      
+
       if (remaining <= 0) {
         handleNextImage();
+      } else {
+        frameId = requestAnimationFrame(animate);
       }
-        
-      frameId = requestAnimationFrame(animate);
-      
     }
     if( isPlaying ) {
       frameId = requestAnimationFrame(animate);
     }
     return () => cancelAnimationFrame(frameId);
     
-  }, [isPlaying, intervalTime, handleNextImage, setPanOffset])
+  }, [isPlaying, intervalTime, handleNextImage, scaleMode, panImage])
 
 
   // idle timer logic
@@ -228,6 +356,7 @@ function App() {
     setTimeLeft(milli)
     lastChangeTime.current = Date.now()
     elapsedBeforePause.current = 0
+    updateImageDimensions();
 
     if(menuOpen){
       setMenuOpen(false)
@@ -282,19 +411,22 @@ function App() {
   return (
     <>
       <div className='app'>
-        <div className="slideshow-container">
+        <div className="slideshow-container" ref={containerRef}>
           {loading && <div className='loading'>Loading next image...</div>}
           {error && <div className='error'>{error}</div>}
-          {!loading && !error && (
-           <img 
-            src={currentImage}
-            className={`slide-image ${!loading ? 'loaded' : ''} ${(scaleMode === 'cover') ? 'crop' : ''}`}
-            onLoad={() => setLoading(false)}
-            onError={() => setError("Failed to load image")}
-            style={{
-              objectPosition: `${panPosition}% ${panPosition}%`,
-            }}
-           /> 
+          {!loading && !error && (  
+            <img 
+              src={currentImage}
+              ref={imageRef}
+              draggable={false}
+              className={`slide-image selectDisable ${!loading ? 'loaded' : ''} ${(scaleMode === 'Crop') ? 'crop' : ''}`}
+              onLoad={() => {
+                setLoading(false)
+                updateImageDimensions();
+              }}
+              onError={() => setError("Failed to load image")}
+            /> 
+            
           )}
 
         </div>
@@ -360,15 +492,21 @@ function App() {
             </div>
             <div>
               <h3>Image scaling mode:</h3>
-              <button onClick={() => setScaleMode((scaleMode === 'contain') ? 'cover' : 'contain')}>
+              <button onClick={() => {
+                setScaleMode(prev => (prev === 'Resize') ? 'Crop' : 'Resize')
+                }}
+                >
+                
                 {scaleMode}
               </button>
             </div>
             {
-              scaleMode === 'cover' && (
+              scaleMode === 'Crop' && (
                 <div>
                   <h3>Pan image during slideshow</h3>
-                  <button onClick={() => setPanImage(!panImage)}>
+                  <button onClick={() => {
+                    setPanImage(!panImage)
+                    }}>
                     {panImage ? 'On' : 'Off'}
                   </button>
                 </div>
