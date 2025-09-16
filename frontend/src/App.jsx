@@ -12,7 +12,7 @@ import useFullscreen from './useFullscreen.jsx'
 // Icons
 import { MdClose, MdFullscreen, MdCloseFullscreen , MdPause , MdPlayArrow, MdNavigateNext, MdNavigateBefore, MdSettings } from "react-icons/md";
 
-import NoSleep from '@zakj/no-sleep'
+import useNoSleep from './useNoSleep.jsx'
 
 function App() {
 
@@ -74,7 +74,9 @@ function App() {
 
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
-  const noSleep = useMemo(() => new NoSleep(), [])
+  // wake lock
+  const [wakeLockEnabled, setWakeLockEnabled] = useState(false);
+  useNoSleep(wakeLockEnabled);
 
   const updateImageDimensions = useCallback(() => {
       const image = imageRef.current;
@@ -283,9 +285,9 @@ function App() {
 
       if (remaining <= 0) {
         handleNextImage();
-      } else {
-        frameId = requestAnimationFrame(animate);
       }
+      frameId = requestAnimationFrame(animate);
+      
     }
     if( isPlaying ) {
       frameId = requestAnimationFrame(animate);
@@ -314,16 +316,16 @@ function App() {
     playButtonRef.current.focus()
     if( isPlaying ) {
       elapsedBeforePause.current = Date.now() - lastChangeTime.current
-      noSleep.disable()
+      setWakeLockEnabled(false);
     } else {
       lastChangeTime.current = Date.now() - elapsedBeforePause.current
-      noSleep.enable()
+      setWakeLockEnabled(true);
     }
 
 
     setIsPlaying(!isPlaying);
 
-  }, [isPlaying, elapsedBeforePause, lastChangeTime, noSleep])
+  }, [isPlaying, elapsedBeforePause, lastChangeTime])
 
   const handlePreviousImage = useCallback(() => {
     if( imageIndex > 0) {
