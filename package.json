@@ -9,7 +9,7 @@
     "build-electron-dir": "npm run build-frontend && electron-builder --dir",
     "electron": "electron electron/main.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "electron-dev": "cross-env NODE_ENV=development electron electron/main.js"
+    "electron-dev": "npm run build-frontend && cross-env NODE_ENV=development electron electron/main.js"
   },
   "keywords": [],
   "author": "",

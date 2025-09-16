@@ -24,7 +24,11 @@ function App() {
     serverUrl,
     setServerUrl,
     progressBarVisible,
-    setProgressBarVisible
+    setProgressBarVisible,
+    scaleMode,
+    setScaleMode,
+    panImage,
+    setPanImage,
   } = useSettings();
 
   const [isPlaying, setIsPlaying] = useState(false)
@@ -48,7 +52,8 @@ function App() {
   const elapsedBeforePause = useRef(0);
 
   const [progressBar, setProgressBar] = useState(0);
-
+  // pan position will be synced with the time between transitions.
+  const [panPosition, setPanPosition] = useState({x: 50, y: 50})
   // options
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -101,7 +106,43 @@ function App() {
     }
   }, [intervalTime])
 
+  const setPanOffset = useCallback((progress) => {
+    if(!isPlaying || scaleMode !== 'cover') return;
+    if(!panImage){
+      setPanPosition({x:50, y:50});
+      return;
+    }
 
+    let newX = progress;
+    let newY = progress;
+    setPanPosition({x: newX, y: newY})
+
+  }, [scaleMode, isPlaying, panImage, setPanPosition])
+  const goToImage = useCallback((index) => {
+    if (index >= 0 && index < imageUrls.length){
+      lastChangeTime.current = Date.now()
+      setTimeLeft(intervalTime)
+      setProgressBar(0)
+      elapsedBeforePause.current = 0
+      setImageIndex(index)
+      setLoading(true)
+      setInterval(() => {
+        setLoading(false)
+      }, 100)
+    }
+  }, [imageUrls.length, intervalTime])
+
+  const handleNextImage = useCallback(() => {
+    nextButtonRef.current.focus();
+    setPanOffset(0);
+    if (imageIndex >= imageUrls.length - 1){
+      // at most recent image
+      fetchRandomImage()
+    } else {
+      // we are not at the end of image array, so we will just go to the next one already in the array.
+      goToImage(imageIndex + 1)
+    }
+  }, [imageIndex, imageUrls.length, goToImage, fetchRandomImage, setPanOffset])
   // Slideshow timer setup
   useEffect(() => {
     let countdownInterval = null
@@ -111,20 +152,21 @@ function App() {
           const elapsed = Date.now() - lastChangeTime.current;
           const remaining = Math.max(0, intervalTime - elapsed)
           setTimeLeft(remaining)
-          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
+          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 33;
           setProgressBar(prog)
+          setPanOffset(prog)
           if(remaining == 0){
-            fetchRandomImage()
+            handleNextImage()
           }
         }
-      }, 100)
+      }, 33)
       // wake lock when isPlaying
       
     }
     return () => {
       if (countdownInterval) clearInterval(countdownInterval)
     }
-  }, [isPlaying, intervalTime, progressBar, fetchRandomImage])
+  }, [isPlaying, intervalTime, progressBar, handleNextImage, setPanOffset, panPosition])
 
 
   // idle timer logic
@@ -134,21 +176,6 @@ function App() {
       document.activeElement.blur()
     }
   }, [idleTimer])
-
-  const goToImage = useCallback((index) => {
-    if (index >= 0 && index < imageUrls.length){
-      lastChangeTime.current = Date.now()
-      setTimeLeft(intervalTime)
-      setProgressBar(0)
-      elapsedBeforePause.current = 0
-      setImageIndex(index)
-
-      setLoading(true)
-      setInterval(() => {
-        setLoading(false)
-      }, 100)
-    }
-  }, [imageUrls.length, intervalTime])
 
 
 
@@ -171,16 +198,6 @@ function App() {
     setIsPlaying(!isPlaying);
 
   }, [isPlaying, elapsedBeforePause, lastChangeTime, noSleep])
-  const handleNextImage = useCallback(() => {
-    nextButtonRef.current.focus();
-    if (imageIndex >= imageUrls.length - 1){
-      // at most recent image
-      fetchRandomImage()
-    } else {
-      // we are not at the end of image array, so we will just go to the next one already in the array.
-      goToImage(imageIndex + 1)
-    }
-  }, [imageIndex, imageUrls.length, goToImage, fetchRandomImage])
 
   const handlePreviousImage = useCallback(() => {
     if( imageIndex > 0) {
@@ -273,9 +290,12 @@ function App() {
           {!loading && !error && (
            <img 
             src={currentImage}
-            className={`slide-image ${!loading ? 'loaded' : ''}`}
+            className={`slide-image ${!loading ? 'loaded' : ''} ${(scaleMode === 'cover') ? 'crop' : ''}`}
             onLoad={() => setLoading(false)}
             onError={() => setError("Failed to load image")}
+            style={{
+              objectPosition: `${panPosition.x}% ${panPosition.y}%`,
+            }}
            /> 
           )}
 
@@ -340,6 +360,22 @@ function App() {
                 {progressBarVisible ? 'On' : 'Off'}
               </button>
             </div>
+            <div>
+              <h3>Image scaling mode:</h3>
+              <button onClick={() => setScaleMode((scaleMode === 'contain') ? 'cover' : 'contain')}>
+                {scaleMode}
+              </button>
+            </div>
+            {
+              scaleMode === 'cover' && (
+                <div>
+                  <h3>Pan image during slideshow</h3>
+                  <button onClick={() => setPanImage(!panImage)}>
+                    {panImage ? 'On' : 'Off'}
+                  </button>
+                </div>
+              )
+            }
             <button ref={submitRef} className='submit' onClick={handleSubmit}>Submit</button>
           </div>
       </div>
