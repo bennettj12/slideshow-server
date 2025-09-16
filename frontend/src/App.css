@@ -33,6 +33,7 @@ body, html {
 
   opacity: 0;
   animation: fadeIn 0.3s ease-in-out forwards;
+  will-change: object-position;
 }
 .slide-image.crop {
   object-fit: cover;
@@ -72,7 +73,6 @@ body, html {
   height: 100%;
   background-color: rgba(40, 255, 255, 0.394);
   width: 0%;
-  transition: 0.1s linear;
 }
 
 .countdown {

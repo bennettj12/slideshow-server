@@ -53,7 +53,7 @@ function App() {
 
   const [progressBar, setProgressBar] = useState(0);
   // pan position will be synced with the time between transitions.
-  const [panPosition, setPanPosition] = useState({x: 50, y: 50})
+  const [panPosition, setPanPosition] = useState(50)
   // options
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -107,17 +107,14 @@ function App() {
   }, [intervalTime])
 
   const setPanOffset = useCallback((progress) => {
-    if(!isPlaying || scaleMode !== 'cover') return;
-    if(!panImage){
-      setPanPosition({x:50, y:50});
+    if(!isPlaying || scaleMode !== 'cover' || !panImage) {
+      setPanPosition(50);
       return;
     }
-
-    let newX = progress;
-    let newY = progress;
-    setPanPosition({x: newX, y: newY})
+    setPanPosition(progress)
 
   }, [scaleMode, isPlaying, panImage, setPanPosition])
+
   const goToImage = useCallback((index) => {
     if (index >= 0 && index < imageUrls.length){
       lastChangeTime.current = Date.now()
@@ -143,30 +140,31 @@ function App() {
       goToImage(imageIndex + 1)
     }
   }, [imageIndex, imageUrls.length, goToImage, fetchRandomImage, setPanOffset])
-  // Slideshow timer setup
+  // Slideshow timer and panning
   useEffect(() => {
-    let countdownInterval = null
+    let frameId = null
+
+    const animate = () => {
+      if (!isPlaying) return
+      const elapsed = Date.now() - lastChangeTime.current;
+      const remaining = Math.max(0, intervalTime - elapsed)
+      setTimeLeft(remaining)
+      const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
+      setProgressBar(prog)
+      setPanOffset(prog)
+      if (remaining <= 0) {
+        handleNextImage();
+      } else {
+        frameId = requestAnimationFrame(animate);
+      }
+    }
     if( isPlaying ) {
-      countdownInterval = setInterval(() => {
-        if(isPlaying){
-          const elapsed = Date.now() - lastChangeTime.current;
-          const remaining = Math.max(0, intervalTime - elapsed)
-          setTimeLeft(remaining)
-          const prog = Math.round(elapsed) / (intervalTime + 0.0) * 100;
-          setProgressBar(prog)
-          setPanOffset(prog)
-          if(remaining == 0){
-            handleNextImage()
-          }
-        }
-      }, 33)
-      // wake lock when isPlaying
-      
+      frameId = requestAnimationFrame(animate);
     }
     return () => {
-      if (countdownInterval) clearInterval(countdownInterval)
+      if(frameId) cancelAnimationFrame(animate);
     }
-  }, [isPlaying, intervalTime, progressBar, handleNextImage, setPanOffset, panPosition])
+  }, [isPlaying, intervalTime, handleNextImage, setPanOffset])
 
 
   // idle timer logic
@@ -294,7 +292,7 @@ function App() {
             onLoad={() => setLoading(false)}
             onError={() => setError("Failed to load image")}
             style={{
-              objectPosition: `${panPosition.x}% ${panPosition.y}%`,
+              objectPosition: `${panPosition}% ${panPosition}%`,
             }}
            /> 
           )}
