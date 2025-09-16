@@ -154,16 +154,16 @@ function App() {
       setPanOffset(prog)
       if (remaining <= 0) {
         handleNextImage();
-      } else {
-        frameId = requestAnimationFrame(animate);
       }
+        
+      frameId = requestAnimationFrame(animate);
+      
     }
     if( isPlaying ) {
       frameId = requestAnimationFrame(animate);
     }
-    return () => {
-      if(frameId) cancelAnimationFrame(animate);
-    }
+    return () => cancelAnimationFrame(frameId);
+    
   }, [isPlaying, intervalTime, handleNextImage, setPanOffset])
 
 
@@ -181,7 +181,7 @@ function App() {
   useEffect(() => {
     fetchRandomImage()
   }, [fetchRandomImage])
-
+  // toggle play & pause
   const togglePlaying = useCallback(() => {
     playButtonRef.current.focus()
     if( isPlaying ) {
