@@ -7,6 +7,9 @@
 // express: server
 const express = require('express');
 
+// config file
+const defaultConfig = require('./config.json');
+
 // path and filesystem needed to access server images
 const path = require('path');
 const fs = require('fs');
@@ -14,24 +17,23 @@ const fs = require('fs');
 // cors
 const cors = require('cors');
 
-// chokidar allows us to add/remove from image directory without reseting the server?
+// chokidar allows us to add/remove from image directory without resetting the server
 const chokidar = require('chokidar');
 
 const ip = require('ip')
 
 
 
+
 // init server
 const app = express();
-const PORT = process.env.SLIDESHOW_PORT || 3001;
+const PORT = process.env.SLIDESHOW_PORT || defaultConfig.port || 3001;
 const FRONTEND_BUILD_PATH = process.env.FRONTEND_BUILD_PATH || 
     path.join(__dirname, '../frontend/dist');
 
 let config = {
-    imageDirectory: process.env.IMAGE_FOLDER || path.join(__dirname, 'sample-images'),
+    imageDirectory: process.env.IMAGE_FOLDER || defaultConfig.image_folder,
 }
-
-let server;
 
 app.use(cors());
 app.use(express.json());

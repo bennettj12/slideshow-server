@@ -1,3 +1,4 @@
 backend/sample-images
+backend/config.json
 node_modules
 dist-electron/

@@ -1,12 +1,13 @@
 {
   "name": "slideshow-server",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "An app which hosts a timed interval slideshow. Ideal for a simple digital photo frame or for timed art practice.",
   "main": "electron/main.js",
   "scripts": {
     "build-frontend": "cd frontend && npm run build",
     "build-electron": "npm run build-frontend && electron-builder --win",
     "build-electron-dir": "npm run build-frontend && electron-builder --dir",
+    "backend": "node backend/server.js",
     "electron": "electron electron/main.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "electron-dev": "npm run build-frontend && cross-env NODE_ENV=development electron electron/main.js"
