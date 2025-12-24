@@ -1,6 +1,6 @@
 # Slideshow Server
 
-Electron app which allows you to select a folder on your pc. Once done, it hosts an express server which delivers a slideshow app randomly cycling through the images in that folder. The app can then be hidden to the tray.
+Electron app which allows you to select a folder on your pc. Once done, it hosts a webserver which delivers a front-end app which can show a slideshow of the images in that folder. The app can then be hidden to the tray. Since it self-hosts a webserver, the slideshow app can be accessed from any device's web browser on your network.
 
 The web client allows for some customization such as custom interval times and a toggle-able timers.
 The client is also capable of pausing, viewing previous images, and skipping, and supports keyboard and common remote control/media codes.
