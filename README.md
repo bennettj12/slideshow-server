@@ -17,7 +17,7 @@ Usage:
 2. Press 'select folder' and navigate to a folder with images, confirm by pressing 'select folder' in the navigator.
 3. Visit the address shown in the app on any device on your network.
 
-Can also be ran without electron:
+Can also be ran without electron (such as on a web server):
 
 1. Pull the repository and `npm i`.
 2. Create `config.json` in the `backend` folder.
