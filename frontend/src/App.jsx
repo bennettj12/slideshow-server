@@ -134,13 +134,22 @@ function App() {
         }
       } else {
         // contain
+        const cWidth = container.clientWidth;
+        const cHeight = container.clientHeight;
+        const iWidth = image.naturalWidth || 1;
+        const iHeight = image.naturalHeight || 1;
+
+        const scale = Math.min(cWidth / iWidth, cHeight / iHeight);
+        const displayWidth = iWidth * scale;
+        const displayHeight = iHeight * scale;
+
         image.style.transform = 'translate(-50%, -50%)';
         image.style.left = '50%';
         image.style.top = '50%';
-        image.style.maxWidth = '100%';
-        image.style.maxHeight = '100%';
-        image.style.width = 'auto';
-        image.style.height = 'auto'
+        image.style.maxWidth = 'none';
+        image.style.maxHeight = 'none';
+        image.style.width = `${displayWidth}px`;
+        image.style.height = `${displayHeight}px`
       }
       
   }, [scaleMode, panImage])
@@ -273,13 +282,22 @@ function App() {
         }
       } else {
         // contain
+        const cWidth = container.clientWidth;
+        const cHeight = container.clientHeight;
+        const iWidth = image.naturalWidth || 1;
+        const iHeight = image.naturalHeight || 1;
+
+        const scale = Math.min(cWidth / iWidth, cHeight / iHeight);
+        const displayWidth = iWidth * scale;
+        const displayHeight = iHeight * scale;
+
         image.style.transform = 'translate(-50%, -50%)';
         image.style.left = '50%';
         image.style.top = '50%';
-        image.style.width = 'auto';
-        image.style.height = 'auto';
-        image.style.maxWidth = '100%';
-        image.style.maxHeight = '100%';
+        image.style.maxWidth = 'none';
+        image.style.maxHeight = 'none';
+        image.style.width = `${displayWidth}px`;
+        image.style.height = `${displayHeight}px`
       }
       
 
