@@ -115,7 +115,7 @@ async function getImageFilesRecursive(dir) {
 
 app.use('/images', express.static(config.imageDirectory));
 // ssl renewal
-app.use('/.well-known/acme-challenge', express.static('./.well-known/acme-challenge'));
+app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, '.well-known/acme-challenge')));
 
 app.use(express.static(FRONTEND_BUILD_PATH))
 
