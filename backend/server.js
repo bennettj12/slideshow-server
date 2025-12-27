@@ -6,6 +6,8 @@
 
 // express: server
 const express = require('express');
+const https = require('https');
+const http = require('http');
 
 // config file
 const defaultConfig = require('./config.json');
@@ -149,11 +151,27 @@ async function initialize(){
 }
 
 initialize().catch(console.error).then(() => {
+    // if config contains https info
+    if(defaultConfig.key) {
+        http.createServer((req, res) => {
+            res.writeHead(301, {Location: `https://${req.headers.host}${req.url}`});
+            res.end();
+        }).listen(80, '0.0.0.0');
 
+        https.createServer({
+            key: fs.readFileSync(defaultConfig.key),
+            cert: fs.readFileSync(defaultConfig.cert)
+        }, app).listen(PORT, '0,0,0,0', () => {
+            console.log(`Slideshow server running on http://localhost:${PORT}`)
+            console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
+        });
+    } else {
 
-    server = app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Slideshow server running on http://localhost:${PORT}`)
-        console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
-    })
+        app.listen(PORT, '0,0,0,0', () => {
+            console.log(`Slideshow server running on http://localhost:${PORT}`)
+            console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
+        });
+    }
+
 })
 
