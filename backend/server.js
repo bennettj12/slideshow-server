@@ -161,13 +161,13 @@ initialize().catch(console.error).then(() => {
         https.createServer({
             key: fs.readFileSync(defaultConfig.key),
             cert: fs.readFileSync(defaultConfig.certificate)
-        }, app).listen(PORT, '0,0,0,0', () => {
+        }, app).listen(PORT, '0.0.0.0', () => {
             console.log(`Slideshow server running on http://localhost:${PORT}`)
             console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
         });
     } else {
 
-        app.listen(PORT, '0,0,0,0', () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log(`Slideshow server running on http://localhost:${PORT}`)
             console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
         });
