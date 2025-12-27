@@ -152,7 +152,7 @@ function App() {
         image.style.height = `${displayHeight}px`
       }
       
-  }, [scaleMode, panImage])
+  }, [scaleMode, panImage, isFullscreen])
 
   // update dimensions when scalemode or panimage changed
   useEffect(() => {
