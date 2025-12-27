@@ -114,6 +114,8 @@ async function getImageFilesRecursive(dir) {
 
 
 app.use('/images', express.static(config.imageDirectory));
+// ssl renewal
+app.use('/.well-known/acme-challenge', express.static('./.well-known/acme-challenge'));
 
 app.use(express.static(FRONTEND_BUILD_PATH))
 
@@ -162,8 +164,8 @@ initialize().catch(console.error).then(() => {
             key: fs.readFileSync(defaultConfig.key),
             cert: fs.readFileSync(defaultConfig.certificate)
         }, app).listen(PORT, '0.0.0.0', () => {
-            console.log(`Slideshow server running on http://localhost:${PORT}`)
-            console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
+            console.log(`Slideshow server running on https://localhost:${PORT}`)
+            console.log(`Accessible on your network at: https://${localIP}:${PORT}`);
         });
     } else {
 
