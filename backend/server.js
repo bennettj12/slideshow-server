@@ -27,7 +27,7 @@ const ip = require('ip')
 
 // init server
 const app = express();
-const PORT = process.env.SLIDESHOW_PORT || defaultConfig.port || 3001;
+const PORT = process.env.SLIDESHOW_PORT || process.env.PORT || defaultConfig.port || 3000;
 const FRONTEND_BUILD_PATH = process.env.FRONTEND_BUILD_PATH || 
     path.join(__dirname, '../frontend/dist');
 
