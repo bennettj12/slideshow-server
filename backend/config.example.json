@@ -1,6 +1,0 @@
-{
-    "image_folder": "Absolute path to image folder",
-    "port": 443,
-    "certificate": "Absolute path to certificate",
-    "key": "Absolute path to key"
-}

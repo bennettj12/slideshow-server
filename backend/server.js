@@ -7,9 +7,6 @@
 // express: server
 const express = require('express');
 
-// config file
-const defaultConfig = require('./config.json');
-
 // path and filesystem needed to access server images
 const path = require('path');
 const fs = require('fs');
@@ -27,12 +24,12 @@ const ip = require('ip')
 
 // init server
 const app = express();
-const PORT = process.env.SLIDESHOW_PORT || process.env.PORT || defaultConfig.port || 3000;
+const PORT = process.env.SLIDESHOW_PORT || process.env.PORT || 3000;
 const FRONTEND_BUILD_PATH = process.env.FRONTEND_BUILD_PATH || 
     path.join(__dirname, '../frontend/dist');
 
 let config = {
-    imageDirectory: process.env.IMAGE_FOLDER || defaultConfig.image_folder,
+    imageDirectory: process.env.IMAGE_FOLDER || process.env.IMAGES_PATH,
 }
 
 app.use(cors());
