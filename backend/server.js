@@ -31,7 +31,7 @@ const FRONTEND_BUILD_PATH = process.env.FRONTEND_BUILD_PATH ||
     path.join(__dirname, '../frontend/dist');
 
 let config = {
-    imageDirectory: process.env.IMAGE_FOLDER || process.env.IMAGES_PATH,
+    imageDirectory: process.env.IMAGE_FOLDER || process.env.IMAGES_PATH || './',
 }
 
 app.use(cors());
