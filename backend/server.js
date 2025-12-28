@@ -6,8 +6,6 @@
 
 // express: server
 const express = require('express');
-const https = require('https');
-const http = require('http');
 
 // config file
 const defaultConfig = require('./config.json');
@@ -114,9 +112,6 @@ async function getImageFilesRecursive(dir) {
 
 
 app.use('/images', express.static(config.imageDirectory));
-// ssl renewal
-app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, '.well-known/acme-challenge')));
-
 app.use(express.static(FRONTEND_BUILD_PATH))
 
 // API Endpoint: get random image
@@ -153,27 +148,9 @@ async function initialize(){
 }
 
 initialize().catch(console.error).then(() => {
-    // if config contains https info
-    if(defaultConfig.key) {
-        http.createServer((req, res) => {
-            res.writeHead(301, {Location: `https://${req.headers.host}${req.url}`});
-            res.end();
-        }).listen(80, '0.0.0.0');
-
-        https.createServer({
-            key: fs.readFileSync(defaultConfig.key),
-            cert: fs.readFileSync(defaultConfig.certificate)
-        }, app).listen(PORT, '0.0.0.0', () => {
-            console.log(`Slideshow server running on https://localhost:${PORT}`)
-            console.log(`Accessible on your network at: https://${localIP}:${PORT}`);
-        });
-    } else {
-
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Slideshow server running on http://localhost:${PORT}`)
-            console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
-        });
-    }
-
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Slideshow server running on http://localhost:${PORT}`)
+        console.log(`Accessible on your network at: http://${localIP}:${PORT}`);
+    });
 })
 
